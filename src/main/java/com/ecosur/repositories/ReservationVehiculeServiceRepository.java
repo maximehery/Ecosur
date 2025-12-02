@@ -3,6 +3,7 @@ package com.ecosur.repositories;
 import com.ecosur.entities.ReservationVehiculeService;
 import com.ecosur.entities.Utilisateur;
 import com.ecosur.entities.StatutReservation;
+import com.ecosur.entities.VehiculeService;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -22,4 +23,10 @@ public interface ReservationVehiculeServiceRepository extends JpaRepository<Rese
             LocalDateTime finSouhaitee,
             LocalDateTime debutSouhaite
     );
+
+    List<ReservationVehiculeService> findByVehiculeAndStatutAndDateHeureDebutLessThanAndDateHeureFinPrevueGreaterThan(
+            VehiculeService vehicule,
+            StatutReservation statutReservation,
+            LocalDateTime fin,
+            LocalDateTime debut);
 }
