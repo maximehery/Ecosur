@@ -29,8 +29,9 @@ public class VehiculePerso {
     @Column(name = "nb_places")
     private Integer nbPlaces;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private String statut;
+    private StatutVehicule statut;
 
     @Column(length = 50)
     private String modele;
@@ -100,11 +101,11 @@ public class VehiculePerso {
         this.nbPlaces = nbPlaces;
     }
 
-    public String getStatut() {
+    public StatutVehicule getStatut() {
         return statut;
     }
 
-    public void setStatut(String statut) {
+    public void setStatut(StatutVehicule statut) {
         this.statut = statut;
     }
 
