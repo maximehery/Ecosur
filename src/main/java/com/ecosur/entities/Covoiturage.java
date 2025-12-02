@@ -26,8 +26,9 @@ public class Covoiturage {
     @Column(name = "nb_places_restantes")
     private Integer nbPlacesRestantes;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private String statut;
+    private StatutCovoiturage statut;
 
     // ----- relations -----
 
@@ -99,11 +100,11 @@ public class Covoiturage {
         this.nbPlacesRestantes = nbPlacesRestantes;
     }
 
-    public String getStatut() {
+    public StatutCovoiturage getStatut() {
         return statut;
     }
 
-    public void setStatut(String statut) {
+    public void setStatut(StatutCovoiturage statut) {
         this.statut = statut;
     }
 

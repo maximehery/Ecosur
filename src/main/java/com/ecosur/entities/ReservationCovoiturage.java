@@ -15,8 +15,9 @@ public class ReservationCovoiturage {
     @Column(name = "date_reservation")
     private LocalDate dateReservation;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private String statut;
+    private StatutReservation statut;
 
     @ManyToOne
     @JoinColumn(name = "id_covoiturage")
@@ -46,11 +47,11 @@ public class ReservationCovoiturage {
         this.dateReservation = dateReservation;
     }
 
-    public String getStatut() {
+    public StatutReservation getStatut() {
         return statut;
     }
 
-    public void setStatut(String statut) {
+    public void setStatut(StatutReservation statut) {
         this.statut = statut;
     }
 
