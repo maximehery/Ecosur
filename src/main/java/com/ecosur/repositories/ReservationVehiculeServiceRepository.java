@@ -1,9 +1,8 @@
-package com.ecosur.gestiontransports.domain.repository;
+package com.ecosur.repositories;
 
-import com.ecosur.gestiontransports.domain.entity.ReservationVehiculeService;
-import com.ecosur.gestiontransports.domain.entity.VehiculeService;
-import com.ecosur.gestiontransports.domain.entity.Utilisateur;
-import com.ecosur.gestiontransports.domain.entity.StatutReservation;
+import com.ecosur.entities.ReservationVehiculeService;
+import com.ecosur.entities.Utilisateur;
+import com.ecosur.entities.StatutReservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

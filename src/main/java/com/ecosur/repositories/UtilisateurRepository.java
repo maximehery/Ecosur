@@ -1,7 +1,7 @@
-package com.ecosur.gestiontransports.domain.repository;
+package com.ecosur.repositories;
 
-import com.ecosur.gestiontransports.domain.entity.Utilisateur;
-import com.ecosur.gestiontransports.domain.entity.Role;
+import com.ecosur.entities.Utilisateur;
+import com.ecosur.entities.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

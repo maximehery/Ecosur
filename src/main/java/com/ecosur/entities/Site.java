@@ -1,4 +1,4 @@
-package com.ecosur.gestiontransports.domain.entity;
+package com.ecosur.entities;
 
 import jakarta.persistence.*;
 

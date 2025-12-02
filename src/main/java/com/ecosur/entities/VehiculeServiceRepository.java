@@ -1,10 +1,7 @@
-package com.ecosur.gestiontransports.domain.repository;
+package com.ecosur.entities;
 
-import com.ecosur.gestiontransports.domain.entity.VehiculeService;
-import com.ecosur.gestiontransports.domain.entity.StatutVehicule;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VehiculeServiceRepository extends JpaRepository<VehiculeService, Long> {
