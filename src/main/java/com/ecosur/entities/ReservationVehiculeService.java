@@ -39,5 +39,69 @@ public class ReservationVehiculeService {
 
     public ReservationVehiculeService() {}
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public VehiculeService getVehicule() {
+        return vehicule;
+    }
+
+    public void setVehicule(VehiculeService vehicule) {
+        this.vehicule = vehicule;
+    }
+
+    public Utilisateur getResponsable() {
+        return responsable;
+    }
+
+    public void setResponsable(Utilisateur responsable) {
+        this.responsable = responsable;
+    }
+
+    public Adresse getAdresseDepart() {
+        return adresseDepart;
+    }
+
+    public void setAdresseDepart(Adresse adresseDepart) {
+        this.adresseDepart = adresseDepart;
+    }
+
+    public Adresse getAdresseDepot() {
+        return adresseDepot;
+    }
+
+    public void setAdresseDepot(Adresse adresseDepot) {
+        this.adresseDepot = adresseDepot;
+    }
+
+    public LocalDateTime getDateHeureDebut() {
+        return dateHeureDebut;
+    }
+
+    public void setDateHeureDebut(LocalDateTime dateHeureDebut) {
+        this.dateHeureDebut = dateHeureDebut;
+    }
+
+    public LocalDateTime getDateHeureFinPrevue() {
+        return dateHeureFinPrevue;
+    }
+
+    public void setDateHeureFinPrevue(LocalDateTime dateHeureFinPrevue) {
+        this.dateHeureFinPrevue = dateHeureFinPrevue;
+    }
+
+    public StatutReservation getStatut() {
+        return statut;
+    }
+
+    public void setStatut(StatutReservation statut) {
+        this.statut = statut;
+    }
+
     // getters/setters…
 }
