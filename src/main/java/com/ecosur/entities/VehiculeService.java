@@ -29,10 +29,10 @@ public class VehiculeService {
     private String motorisation;
 
     @Column(name = "co2_par_km")
-    private Double co2ParKm;
+    private Integer co2ParKm;
 
     @Column(name = "nb_places", nullable = false)
-    private Integer nombrePlaces;
+    private Integer nbPlaces;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
