@@ -2,11 +2,9 @@ package com.ecosur.services;
 
 import com.ecosur.entities.Covoiturage;
 import com.ecosur.entities.ReservationCovoiturage;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
 public interface CovoiturageService {
     /**
      * Récupère la liste de tous les covoiturages disponibles.
