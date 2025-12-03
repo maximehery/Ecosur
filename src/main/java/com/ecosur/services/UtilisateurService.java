@@ -31,6 +31,7 @@ public interface UtilisateurService {
 
     /**
      * Met à jour les infos de profil de l'utilisateur connecté (nom, prénom, adresse, téléphone...).
+     * Utilisé côté "profil collaborateur".
      */
     Utilisateur updateProfile(Long userId,
                               String nom,
@@ -58,4 +59,25 @@ public interface UtilisateurService {
      * Liste des utilisateurs actifs.
      */
     List<Utilisateur> getAllActiveUsers();
+
+    /**
+     * CU-19 : liste de tous les utilisateurs (actifs ou non).
+     */
+    List<Utilisateur> getAllUsers();
+
+    /**
+     * CU-19 : liste des utilisateurs par rôle.
+     */
+    List<Utilisateur> getUsersByRole(RoleName roleName);
+
+    /**
+     * CU-19 : Mise à jour d'un compte utilisateur par un administrateur.
+     * (nom, prénom, email, rôle, actif)
+     */
+    Utilisateur updateUserAdmin(Long userId,
+                                String nom,
+                                String prenom,
+                                String email,
+                                RoleName roleName,
+                                Boolean actif);
 }

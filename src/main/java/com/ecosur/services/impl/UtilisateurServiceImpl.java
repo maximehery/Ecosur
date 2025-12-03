@@ -1,6 +1,5 @@
 package com.ecosur.services.impl;
 
-
 import com.ecosur.entities.*;
 import com.ecosur.exception.BusinessException;
 import com.ecosur.exception.ResourceNotFoundException;
@@ -25,9 +24,9 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private final SiteRepository siteRepository;
 
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository,
-                           RoleRepository roleRepository,
-                           AdresseRepository adresseRepository,
-                           SiteRepository siteRepository) {
+                                  RoleRepository roleRepository,
+                                  AdresseRepository adresseRepository,
+                                  SiteRepository siteRepository) {
         this.utilisateurRepository = utilisateurRepository;
         this.roleRepository = roleRepository;
         this.adresseRepository = adresseRepository;
@@ -147,5 +146,62 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Transactional(readOnly = true)
     public List<Utilisateur> getAllActiveUsers() {
         return utilisateurRepository.findByActifTrue();
+    }
+
+    // ----------------- Méthodes ajoutées pour CU-19 (Admin) -----------------
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Utilisateur> getAllUsers() {
+        return utilisateurRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Utilisateur> getUsersByRole(RoleName roleName) {
+        Role role = roleRepository.findByCode(roleName)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Role non trouvé pour le code : " + roleName));
+        return utilisateurRepository.findByRole(role);
+    }
+
+    @Override
+    public Utilisateur updateUserAdmin(Long userId,
+                                       String nom,
+                                       String prenom,
+                                       String email,
+                                       RoleName roleName,
+                                       Boolean actif) {
+
+        Utilisateur user = getById(userId);
+
+        if (nom != null && !nom.isBlank()) {
+            user.setNom(nom);
+        }
+        if (prenom != null && !prenom.isBlank()) {
+            user.setPrenom(prenom);
+        }
+
+        if (email != null && !email.isBlank()) {
+            // si changement d'email, vérifier unicité
+            if (!email.equals(user.getEmail())
+                    && utilisateurRepository.findByEmail(email).isPresent()) {
+                throw new BusinessException("Un autre utilisateur utilise déjà cet email : " + email);
+            }
+            user.setEmail(email);
+        }
+
+        if (roleName != null) {
+            Role role = roleRepository.findByCode(roleName)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Role non trouvé pour le code : " + roleName));
+            user.setRole(role);
+        }
+
+        if (actif != null) {
+            user.setActif(actif);
+        }
+
+        return utilisateurRepository.save(user);
     }
 }
