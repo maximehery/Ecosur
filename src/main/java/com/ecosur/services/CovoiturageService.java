@@ -1,5 +1,6 @@
 package com.ecosur.services;
 
+import com.ecosur.dto.covoiturage.CovoiturageDto;
 import com.ecosur.entities.Covoiturage;
 import com.ecosur.entities.ReservationCovoiturage;
 
@@ -44,6 +45,23 @@ public interface CovoiturageService {
      * @return une liste de {@link ReservationCovoiturage} associées à cet utilisateur.
      */
     List<ReservationCovoiturage> listReservationByUser(Long userId);
+
+    /**
+     * Crée une nouvelle annonce de covoiturage.
+     *
+     * @param dto les informations du covoiturage à créer.
+     * @param userId l'identifiant de l'utilisateur créant l'annonce (organisateur).
+     */
+    void createAnnonce(CovoiturageDto dto, Long userId);
+
+    /**
+     * Met à jour une annonce de covoiturage existante.
+     *
+     * @param id l'identifiant du covoiturage à mettre à jour.
+     * @param dto les nouvelles informations du covoiturage.
+     * @param userId l'identifiant de l'utilisateur effectuant la modification.
+     */
+    void updateAnnonce(Long id, CovoiturageDto dto, Long userId);
 
     /**
      * Supprime une annonce de covoiturage.
