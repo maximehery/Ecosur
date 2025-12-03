@@ -41,7 +41,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
     @Override
     @Transactional(readOnly = true)
     public VehiculeService getVehiculeById(Long id) {
-        return vehiculeRepository.findById(Math.toIntExact(id))
+        return vehiculeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Véhicule de service non trouvé pour l'id : " + id));
     }

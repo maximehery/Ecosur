@@ -168,7 +168,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     }
 
     private VehiculeService getVehiculeOrThrow(Long vehiculeId) {
-        VehiculeService v = vehiculeRepository.findById(Math.toIntExact(vehiculeId))
+        VehiculeService v = vehiculeRepository.findById(vehiculeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Véhicule de service non trouvé pour l'id : " + vehiculeId));
 
