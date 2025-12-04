@@ -6,6 +6,7 @@ import com.ecosur.exception.ResourceNotFoundException;
 import com.ecosur.repositories.ReservationVehiculeServiceRepository;
 import com.ecosur.repositories.VehiculeServiceRepository;
 import com.ecosur.services.AdminVehiculeService;
+import com.ecosur.services.EmailService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +20,14 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
 
     private final VehiculeServiceRepository vehiculeRepository;
     private final ReservationVehiculeServiceRepository reservationRepository;
+    private final EmailService emailService;
 
     public AdminVehiculeServiceImpl(VehiculeServiceRepository vehiculeRepository,
-                                    ReservationVehiculeServiceRepository reservationRepository) {
+                                    ReservationVehiculeServiceRepository reservationRepository,
+                                    EmailService emailService) {
         this.vehiculeRepository = vehiculeRepository;
         this.reservationRepository = reservationRepository;
+        this.emailService = emailService;
     }
 
     // ---------- CU-14 : visualiser le parc ----------
@@ -151,6 +155,7 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
                 reservationRepository.save(r);
 
                 // TODO Bloc 4 : appeler EmailService pour prévenir le collaborateur (RM-12)
+                emailService.sendVehiculeIndisponibleNotification(r, vehicule);
             }
         }
     }

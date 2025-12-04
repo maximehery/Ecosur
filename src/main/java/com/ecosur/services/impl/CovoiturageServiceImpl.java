@@ -5,6 +5,7 @@ import com.ecosur.entities.*;
 import com.ecosur.exception.ResourceNotFoundException;
 import com.ecosur.repositories.*;
 import com.ecosur.services.CovoiturageService;
+import com.ecosur.services.EmailService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ public class CovoiturageServiceImpl implements CovoiturageService {
     private final CovoiturageRepository covoiturageRepository;
     private final ReservationCovoiturageRepository reservationCovoiturageRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final EmailService emailService;
     private final AdresseRepository adresseRepository;
     private final VehiculePersoRepository vehiculePersoRepository;
 
@@ -22,14 +24,16 @@ public class CovoiturageServiceImpl implements CovoiturageService {
                                   ReservationCovoiturageRepository reservationCovoiturageRepository,
                                   UtilisateurRepository utilisateurRepository,
                                   AdresseRepository adresseRepository,
-                                  VehiculePersoRepository vehiculePersoRepository) {
+                                  VehiculePersoRepository vehiculePersoRepository,
+                                  EmailService emailService) {
         this.covoiturageRepository = covoiturageRepository;
         this.reservationCovoiturageRepository = reservationCovoiturageRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.adresseRepository = adresseRepository;
         this.vehiculePersoRepository = vehiculePersoRepository;
+        this.emailService = emailService;
     }
-
+  
     @Override
     @Transactional(readOnly = true)
     public List<Covoiturage> listCovoiturages() {
@@ -71,6 +75,9 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         reservation.setCovoiturage(covoiturage);
         reservation.setPassager(utilisateur);
         reservationCovoiturageRepository.save(reservation);
+
+        // ✅ Email de confirmation pour le passager
+        emailService.sendReservationCovoiturageConfirmation(reservation);
     }
 
     @Override
@@ -83,6 +90,9 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         if (!reservation.getPassager().getId().equals(userId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à annuler cette réservation");
         }
+
+        // ✅ Email d'annulation pour le passager
+        emailService.sendReservationCovoiturageCancelled(reservation);
 
         reservationCovoiturageRepository.delete(reservation);
     }
@@ -187,6 +197,44 @@ public class CovoiturageServiceImpl implements CovoiturageService {
             throw new RuntimeException("Vous n'êtes pas autorisé à supprimer ce covoiturage");
         }
 
+        // ✅ Prévenir tous les passagers que le covoiturage est annulé
+        emailService.sendCovoiturageCancelledNotification(covoiturage);
+
+        // Supprimer les réservations, puis l'annonce (si pas de cascade)
+        List<ReservationCovoiturage> reservations =
+                reservationCovoiturageRepository.findByCovoiturage(covoiturage);
+        reservationCovoiturageRepository.deleteAll(reservations);
+
         covoiturageRepository.delete(covoiturage);
+    }
+
+
+    // ---------- Exemple : mise à jour d'une annonce (CU-08) ----------
+
+    @Transactional
+    public Covoiturage updateAnnonce(Long covoiturageId,
+                                     Long userId,
+                                     Covoiturage updatedData) {
+
+        Covoiturage covoiturage = covoiturageRepository.findById(covoiturageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Covoiturage non trouvé"));
+
+        // Vérifier que l'utilisateur est bien l'organisateur
+        if (!covoiturage.getOrganisateur().getId().equals(userId)) {
+            throw new RuntimeException("Vous n'êtes pas autorisé à modifier ce covoiturage");
+        }
+
+        // Exemple : on met à jour seulement certains champs (à adapter à ton entité)
+        covoiturage.setDateHeureDepart(updatedData.getDateHeureDepart());
+        covoiturage.setAdresseDepart(updatedData.getAdresseDepart());
+        covoiturage.setAdresseArrivee(updatedData.getAdresseArrivee());
+        covoiturage.setNbPlacesRestantes(updatedData.getNbPlacesRestantes());
+
+        Covoiturage saved = covoiturageRepository.save(covoiturage);
+
+        // ✅ Notifier tous les passagers que le covoiturage est mis à jour
+        emailService.sendCovoiturageUpdatedNotification(saved);
+
+        return saved;
     }
 }

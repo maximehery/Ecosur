@@ -14,4 +14,7 @@ public interface ReservationCovoiturageRepository extends JpaRepository<Reservat
     long countByCovoiturage(Covoiturage covoiturage);
 
     List<ReservationCovoiturage> findByPassager(Utilisateur passager);
+
+    List<ReservationCovoiturage> findByCovoiturage(Covoiturage covoiturage);
+
 }
