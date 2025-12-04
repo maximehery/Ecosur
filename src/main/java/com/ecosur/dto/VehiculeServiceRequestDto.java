@@ -2,9 +2,8 @@ package com.ecosur.dto;
 
 import com.ecosur.entities.StatutVehicule;
 
-public class VehiculeServiceResponseDto {
+public class VehiculeServiceRequestDto {
 
-    private Long id;
     private String immatriculation;
     private String marque;
     private String modele;
@@ -13,12 +12,9 @@ public class VehiculeServiceResponseDto {
     private String motorisation;
     private Double co2ParKm;
     private Integer nombrePlaces;
-    private StatutVehicule statut;
+    private StatutVehicule statut; // optionnel pour l'update uniquement
 
-    public VehiculeServiceResponseDto() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public VehiculeServiceRequestDto() {}
 
     public String getImmatriculation() { return immatriculation; }
     public void setImmatriculation(String immatriculation) { this.immatriculation = immatriculation; }
@@ -38,7 +34,7 @@ public class VehiculeServiceResponseDto {
     public String getMotorisation() { return motorisation; }
     public void setMotorisation(String motorisation) { this.motorisation = motorisation; }
 
-    public Double getCo2ParKm() { return co2ParKm; }
+    public Integer getCo2ParKm() { return co2ParKm; }
     public void setCo2ParKm(Double co2ParKm) { this.co2ParKm = co2ParKm; }
 
     public Integer getNombrePlaces() { return nombrePlaces; }
