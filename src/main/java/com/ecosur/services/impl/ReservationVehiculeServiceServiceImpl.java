@@ -7,6 +7,7 @@ import com.ecosur.repositories.AdresseRepository;
 import com.ecosur.repositories.ReservationVehiculeServiceRepository;
 import com.ecosur.repositories.UtilisateurRepository;
 import com.ecosur.repositories.VehiculeServiceRepository;
+import com.ecosur.services.EmailService;
 import com.ecosur.services.ReservationVehiculeServiceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,17 +25,23 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     private final UtilisateurRepository utilisateurRepository;
     private final AdresseRepository adresseRepository;
 
+    private final EmailService emailService;
+
     public ReservationVehiculeServiceServiceImpl(
             ReservationVehiculeServiceRepository reservationRepository,
             VehiculeServiceRepository vehiculeRepository,
             UtilisateurRepository utilisateurRepository,
-            AdresseRepository adresseRepository) {
-
+                AdresseRepository adresseRepository,
+            EmailService emailService) {
         this.reservationRepository = reservationRepository;
         this.vehiculeRepository = vehiculeRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.adresseRepository = adresseRepository;
+        this.emailService = emailService;
     }
+
+
+
 
     // ---------- CU-10 : listes en cours / historique ----------
 
@@ -88,6 +95,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
         reservation.setDateHeureDebut(dateHeureDebut);
         reservation.setDateHeureFinPrevue(dateHeureFinPrevue);
         reservation.setStatut(StatutReservation.EN_COURS);
+        emailService.sendReservationVehiculeConfirmation(reservation);
 
         return reservationRepository.save(reservation);
     }
@@ -137,6 +145,8 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
         reservation.setDateHeureDebut(debut);
         reservation.setDateHeureFinPrevue(fin);
 
+        emailService.sendReservationVehiculeUpdated(reservation);
+
         return reservationRepository.save(reservation);
     }
 
@@ -157,6 +167,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
 
         reservation.setStatut(StatutReservation.ANNULEE);
         reservationRepository.save(reservation);
+        emailService.sendReservationVehiculeCancelled(reservation);
     }
 
     // ---------- Méthodes utilitaires privées ----------
