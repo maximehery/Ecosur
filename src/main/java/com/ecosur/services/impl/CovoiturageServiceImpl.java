@@ -1,12 +1,9 @@
 package com.ecosur.services.impl;
 
-import com.ecosur.entities.Covoiturage;
-import com.ecosur.entities.ReservationCovoiturage;
-import com.ecosur.entities.Utilisateur;
+import com.ecosur.dto.covoiturage.CovoiturageDto;
+import com.ecosur.entities.*;
 import com.ecosur.exception.ResourceNotFoundException;
-import com.ecosur.repositories.CovoiturageRepository;
-import com.ecosur.repositories.ReservationCovoiturageRepository;
-import com.ecosur.repositories.UtilisateurRepository;
+import com.ecosur.repositories.*;
 import com.ecosur.services.CovoiturageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +15,19 @@ public class CovoiturageServiceImpl implements CovoiturageService {
     private final CovoiturageRepository covoiturageRepository;
     private final ReservationCovoiturageRepository reservationCovoiturageRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final AdresseRepository adresseRepository;
+    private final VehiculePersoRepository vehiculePersoRepository;
 
     public CovoiturageServiceImpl(CovoiturageRepository covoiturageRepository,
                                   ReservationCovoiturageRepository reservationCovoiturageRepository,
-                                  UtilisateurRepository utilisateurRepository) {
+                                  UtilisateurRepository utilisateurRepository,
+                                  AdresseRepository adresseRepository,
+                                  VehiculePersoRepository vehiculePersoRepository) {
         this.covoiturageRepository = covoiturageRepository;
         this.reservationCovoiturageRepository = reservationCovoiturageRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.adresseRepository = adresseRepository;
+        this.vehiculePersoRepository = vehiculePersoRepository;
     }
 
     @Override
@@ -95,11 +98,91 @@ public class CovoiturageServiceImpl implements CovoiturageService {
 
     @Override
     @Transactional
+    public void createAnnonce(CovoiturageDto dto, Long userId) {
+        Utilisateur organisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+
+        Covoiturage covoiturage = new Covoiturage();
+        covoiturage.setDateHeureDepart(dto.getDateHeureDepart());
+        covoiturage.setDateHeureArrivee(dto.getDateHeureArrivee());
+        covoiturage.setNbPlacesInitiales(dto.getNbPlacesInitiales());
+        covoiturage.setNbPlacesRestantes(dto.getNbPlacesInitiales());
+        covoiturage.setStatut(dto.getStatut());
+        covoiturage.setOrganisateur(organisateur);
+
+        if (dto.getAdresseDepart() != null && dto.getAdresseDepart().getId() != null) {
+            Adresse adresseDepart = adresseRepository.findById(dto.getAdresseDepart().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Adresse de départ non trouvée"));
+            covoiturage.setAdresseDepart(adresseDepart);
+        }
+
+        if (dto.getAdresseArrivee() != null && dto.getAdresseArrivee().getId() != null) {
+            Adresse adresseArrivee = adresseRepository.findById(dto.getAdresseArrivee().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Adresse d'arrivée non trouvée"));
+            covoiturage.setAdresseArrivee(adresseArrivee);
+        }
+
+        if (dto.getVehiculePerso() != null && dto.getVehiculePerso().getId() != null) {
+            VehiculePerso vehicule = vehiculePersoRepository.findById(dto.getVehiculePerso().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Véhicule non trouvé"));
+
+            if (!vehicule.getProprietaire().getId().equals(userId)) {
+                throw new RuntimeException("Vous n'êtes pas propriétaire de ce véhicule");
+            }
+
+            covoiturage.setVehiculePerso(vehicule);
+        }
+
+        covoiturageRepository.save(covoiturage);
+    }
+
+    @Override
+    @Transactional
+    public void updateAnnonce(Long id, CovoiturageDto dto, Long userId) {
+        Covoiturage covoiturage = covoiturageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Covoiturage non trouvé"));
+
+        if (!covoiturage.getOrganisateur().getId().equals(userId)) {
+            throw new RuntimeException("Vous n'êtes pas autorisé à modifier ce covoiturage");
+        }
+
+        covoiturage.setDateHeureDepart(dto.getDateHeureDepart());
+        covoiturage.setDateHeureArrivee(dto.getDateHeureArrivee());
+        covoiturage.setNbPlacesInitiales(dto.getNbPlacesInitiales());
+        covoiturage.setStatut(dto.getStatut());
+
+        if (dto.getAdresseDepart() != null && dto.getAdresseDepart().getId() != null) {
+            Adresse adresseDepart = adresseRepository.findById(dto.getAdresseDepart().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Adresse de départ non trouvée"));
+            covoiturage.setAdresseDepart(adresseDepart);
+        }
+
+        if (dto.getAdresseArrivee() != null && dto.getAdresseArrivee().getId() != null) {
+            Adresse adresseArrivee = adresseRepository.findById(dto.getAdresseArrivee().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Adresse d'arrivée non trouvée"));
+            covoiturage.setAdresseArrivee(adresseArrivee);
+        }
+
+        if (dto.getVehiculePerso() != null && dto.getVehiculePerso().getId() != null) {
+            VehiculePerso vehicule = vehiculePersoRepository.findById(dto.getVehiculePerso().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Véhicule non trouvé"));
+
+            if (!vehicule.getProprietaire().getId().equals(userId)) {
+                throw new RuntimeException("Vous n'êtes pas propriétaire de ce véhicule");
+            }
+
+            covoiturage.setVehiculePerso(vehicule);
+        }
+
+        covoiturageRepository.save(covoiturage);
+    }
+
+    @Override
+    @Transactional
     public void deleteAnnonce(Long id, Long userId) {
         Covoiturage covoiturage = covoiturageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Covoiturage non trouvé"));
 
-        // Vérifier que l'utilisateur est bien l'organisateur du covoiturage
         if (!covoiturage.getOrganisateur().getId().equals(userId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à supprimer ce covoiturage");
         }
