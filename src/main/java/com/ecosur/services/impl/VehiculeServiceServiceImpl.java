@@ -29,12 +29,14 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
     @Override
     @Transactional(readOnly = true)
     public List<VehiculeService> getAllVehicules() {
-        return (List<VehiculeService>) vehiculeRepository.findAll();
+        // findAll() renvoie déjà List<VehiculeService>
+        return vehiculeRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<VehiculeService> getVehiculesDisponibles() {
+        // Seuls les véhicules EN_SERVICE sont considérés disponibles
         return vehiculeRepository.findByStatut(StatutVehicule.EN_SERVICE);
     }
 
@@ -55,8 +57,10 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
 
     @Override
     public VehiculeService updateVehicule(Long id, VehiculeService vehicule) {
+        // On récupère d'abord l'entité existante
         VehiculeService existing = getVehiculeById(id);
 
+        // On met à jour les champs modifiables
         existing.setImmatriculation(vehicule.getImmatriculation());
         existing.setMarque(vehicule.getMarque());
         existing.setModele(vehicule.getModele());
@@ -64,6 +68,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         existing.setPhotoUrl(vehicule.getPhotoUrl());
         existing.setMotorisation(vehicule.getMotorisation());
         existing.setCo2ParKm(vehicule.getCo2ParKm());
+        existing.setNbPlaces(vehicule.getNbPlaces());
 
         // Si tu veux autoriser le changement de statut depuis ce method:
         if (vehicule.getStatut() != null &&
@@ -93,6 +98,10 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
 
     // --------- Méthodes privées ---------
 
+    /**
+     * Applique les règles métier liées au changement de statut.
+     * Si on passe à HORS_SERVICE ou EN_REPARATION, les réservations futures EN_COURS sont annulées.
+     */
     private void changeStatutInternal(VehiculeService vehicule,
                                       StatutVehicule nouveauStatut) {
 
@@ -108,6 +117,9 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         }
     }
 
+    /**
+     * Annule toutes les réservations futures EN_COURS de ce véhicule.
+     */
     private void annulerReservationsFutures(VehiculeService vehicule) {
         LocalDateTime now = LocalDateTime.now();
 
