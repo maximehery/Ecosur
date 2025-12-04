@@ -10,6 +10,7 @@ import com.ecosur.repositories.UtilisateurRepository;
 import com.ecosur.services.UtilisateurService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,15 +23,18 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private final RoleRepository roleRepository;
     private final AdresseRepository adresseRepository;
     private final SiteRepository siteRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository,
                                   RoleRepository roleRepository,
                                   AdresseRepository adresseRepository,
-                                  SiteRepository siteRepository) {
+                                  SiteRepository siteRepository,
+                                  PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
         this.roleRepository = roleRepository;
         this.adresseRepository = adresseRepository;
         this.siteRepository = siteRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -49,12 +53,12 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Role non trouvé pour le code : " + roleName));
 
-        // TODO : chiffrer le mot de passe lorsque Spring Security sera en place (Tâche 2.2)
         Utilisateur user = new Utilisateur();
         user.setNom(nom);
         user.setPrenom(prenom);
         user.setEmail(email);
-        user.setMotDePasse(motDePasse);
+        // ✅ mot de passe hashé
+        user.setMotDePasse(passwordEncoder.encode(motDePasse));
         user.setRole(role);
         user.setActif(true);
 

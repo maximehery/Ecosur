@@ -8,6 +8,7 @@ import com.ecosur.entities.Utilisateur;
 import com.ecosur.exception.BusinessException;
 import com.ecosur.services.UtilisateurService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UtilisateurService utilisateurService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UtilisateurService utilisateurService) {
+    public AuthController(UtilisateurService utilisateurService,
+                          PasswordEncoder passwordEncoder) {
         this.utilisateurService = utilisateurService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -40,8 +44,8 @@ public class AuthController {
         Utilisateur user = utilisateurService.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException("Identifiants invalides."));
 
-        // V1 : comparaison en clair (à remplacer plus tard par PasswordEncoder)
-        if (!user.getMotDePasse().equals(request.getMotDePasse())) {
+        // ✅ Comparaison via PasswordEncoder
+        if (!passwordEncoder.matches(request.getMotDePasse(), user.getMotDePasse())) {
             throw new BusinessException("Identifiants invalides.");
         }
 
