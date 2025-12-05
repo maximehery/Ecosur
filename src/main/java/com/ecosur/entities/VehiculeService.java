@@ -97,7 +97,7 @@ public class VehiculeService {
         this.motorisation = motorisation;
     }
 
-    public Integer getCo2ParKm() {
+    public Double getCo2ParKm() {
         return co2ParKm;
     }
 
