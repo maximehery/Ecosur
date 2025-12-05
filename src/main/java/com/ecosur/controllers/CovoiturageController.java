@@ -3,28 +3,37 @@ package com.ecosur.controllers;
 import com.ecosur.dto.covoiturage.CovoiturageDto;
 import com.ecosur.entities.Covoiturage;
 import com.ecosur.entities.ReservationCovoiturage;
+import com.ecosur.entities.Utilisateur;
+import com.ecosur.exception.BusinessException;
 import com.ecosur.services.CovoiturageService;
+import com.ecosur.services.UtilisateurService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/covoiturages")
+@PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')") // par défaut : module réservé aux rôles "collaborateurs"
 public class CovoiturageController {
 
     private final CovoiturageService covoiturageService;
+    private final UtilisateurService utilisateurService;
 
-    public CovoiturageController(CovoiturageService covoiturageService) {
+    public CovoiturageController(CovoiturageService covoiturageService,
+                                 UtilisateurService utilisateurService) {
         this.covoiturageService = covoiturageService;
+        this.utilisateurService = utilisateurService;
     }
 
     /**
      * Liste tous les covoiturages disponibles.
-     *
-     * @return la liste de tous les covoiturages
+     * Accessible à tout le monde (VISITEUR inclus).
      */
+    @PreAuthorize("permitAll()")
     @GetMapping
     public ResponseEntity<List<Covoiturage>> listCovoiturages() {
         List<Covoiturage> covoiturages = covoiturageService.listCovoiturages();
@@ -33,10 +42,9 @@ public class CovoiturageController {
 
     /**
      * Récupère les détails d'un covoiturage spécifique.
-     *
-     * @param id l'identifiant du covoiturage
-     * @return les détails du covoiturage
+     * Accessible à tout le monde (VISITEUR inclus).
      */
+    @PreAuthorize("permitAll()")
     @GetMapping("/{id}")
     public ResponseEntity<Covoiturage> getCovoiturageDetail(@PathVariable Long id) {
         Covoiturage covoiturage = covoiturageService.getCovoiturageDetail(id);
@@ -45,91 +53,99 @@ public class CovoiturageController {
 
     /**
      * Crée une nouvelle annonce de covoiturage.
-     *
-     * @param dto    les informations du covoiturage à créer
-     * @param userId l'identifiant de l'utilisateur créant l'annonce
-     * @return une réponse HTTP 201 Created
+     * Réservé aux utilisateurs connectés (REGULIER / AFFAIRE / ADMIN).
+     * L'organisateur = utilisateur connecté.
      */
     @PostMapping
     public ResponseEntity<Void> createAnnonce(
             @RequestBody CovoiturageDto dto,
-            @RequestParam Long userId) {
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
         covoiturageService.createAnnonce(dto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
      * Met à jour une annonce de covoiturage existante.
-     *
-     * @param id     l'identifiant du covoiturage à modifier
-     * @param dto    les nouvelles informations du covoiturage
-     * @param userId l'identifiant de l'utilisateur effectuant la modification
-     * @return une réponse HTTP 200 OK
+     * Seul l'organisateur peut modifier son annonce (logique vérifiée dans le service).
      */
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateAnnonce(
             @PathVariable Long id,
             @RequestBody CovoiturageDto dto,
-            @RequestParam Long userId) {
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
         covoiturageService.updateAnnonce(id, dto, userId);
         return ResponseEntity.ok().build();
     }
 
     /**
      * Supprime une annonce de covoiturage.
-     *
-     * @param id     l'identifiant du covoiturage à supprimer
-     * @param userId l'identifiant de l'utilisateur demandant la suppression
-     * @return une réponse HTTP 204 No Content
+     * Seul l'organisateur peut supprimer son annonce.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAnnonce(
             @PathVariable Long id,
-            @RequestParam Long userId) {
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
         covoiturageService.deleteAnnonce(id, userId);
         return ResponseEntity.noContent().build();
     }
 
     /**
      * Permet à un utilisateur de réserver une place dans un covoiturage.
-     *
-     * @param covoiturageId l'identifiant du covoiturage
-     * @param userId        l'identifiant de l'utilisateur effectuant la réservation
-     * @return une réponse HTTP 201 Created
      */
     @PostMapping("/{covoiturageId}/reservations")
     public ResponseEntity<Void> reserverPlace(
             @PathVariable Long covoiturageId,
-            @RequestParam Long userId) {
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
         covoiturageService.reserverPlace(covoiturageId, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
      * Annule une réservation de covoiturage.
-     *
-     * @param reservationId l'identifiant de la réservation à annuler
-     * @param userId        l'identifiant de l'utilisateur demandant l'annulation
-     * @return une réponse HTTP 204 No Content
+     * Seul le passager qui a réservé peut annuler (vérifié dans le service).
      */
     @DeleteMapping("/reservations/{reservationId}")
     public ResponseEntity<Void> cancelReservation(
             @PathVariable Long reservationId,
-            @RequestParam Long userId) {
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
         covoiturageService.cancelReservation(reservationId, userId);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Liste toutes les réservations d'un utilisateur.
-     *
-     * @param userId l'identifiant de l'utilisateur
-     * @return la liste des réservations de l'utilisateur
+     * Liste toutes les réservations de covoiturage de l'utilisateur connecté.
      */
     @GetMapping("/mes-reservations-covoiturage")
     public ResponseEntity<List<ReservationCovoiturage>> listMyReservations(
-            @RequestParam Long userId) {
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
         List<ReservationCovoiturage> reservations = covoiturageService.listReservationByUser(userId);
         return ResponseEntity.ok(reservations);
+    }
+
+    // ----------------------- utilitaire -----------------------
+
+    private Long getCurrentUserId(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new BusinessException("Utilisateur non authentifié.");
+        }
+
+        String email = authentication.getName();
+
+        Utilisateur user = utilisateurService.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Utilisateur connecté introuvable."));
+
+        return user.getId();
     }
 }
