@@ -6,6 +6,7 @@ import com.ecosur.exception.ResourceNotFoundException;
 import com.ecosur.repositories.ReservationVehiculeServiceRepository;
 import com.ecosur.repositories.VehiculeServiceRepository;
 import com.ecosur.services.VehiculeServiceService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
                         "Véhicule de service non trouvé pour l'id : " + id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public VehiculeService createVehicule(VehiculeService vehicule) {
         // RM-11 : création obligatoire avec statut EN_SERVICE
@@ -55,6 +57,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         return vehiculeRepository.save(vehicule);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public VehiculeService updateVehicule(Long id, VehiculeService vehicule) {
         // On récupère d'abord l'entité existante
@@ -79,6 +82,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         return vehiculeRepository.save(existing);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public VehiculeService changeStatut(Long id, StatutVehicule nouveauStatut) {
         VehiculeService vehicule = getVehiculeById(id);
@@ -86,6 +90,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         return vehiculeRepository.save(vehicule);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void deleteVehicule(Long id) {
         VehiculeService vehicule = getVehiculeById(id);

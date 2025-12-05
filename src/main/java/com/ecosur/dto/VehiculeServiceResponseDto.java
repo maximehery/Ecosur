@@ -1,6 +1,7 @@
 package com.ecosur.dto;
 
 import com.ecosur.entities.StatutVehicule;
+import com.ecosur.entities.VehiculeService;
 
 public class VehiculeServiceResponseDto {
 
@@ -11,11 +12,25 @@ public class VehiculeServiceResponseDto {
     private String categorie;
     private String photoUrl;
     private String motorisation;
-    private Double co2ParKm;
+    private Integer co2ParKm;
     private Integer nombrePlaces;
     private StatutVehicule statut;
 
     public VehiculeServiceResponseDto() {}
+
+    public VehiculeServiceResponseDto(VehiculeService entity) {
+        this.id = entity.getId();
+        this.immatriculation = entity.getImmatriculation();
+        this.marque = entity.getMarque();
+        this.modele = entity.getModele();
+        this.categorie = entity.getCategorie();
+        this.photoUrl = entity.getPhotoUrl();
+        this.motorisation = entity.getMotorisation();
+        this.co2ParKm = entity.getCo2ParKm();
+        this.nombrePlaces = entity.getNbPlaces();
+        this.statut = entity.getStatut();
+    }
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -38,8 +53,8 @@ public class VehiculeServiceResponseDto {
     public String getMotorisation() { return motorisation; }
     public void setMotorisation(String motorisation) { this.motorisation = motorisation; }
 
-    public Double getCo2ParKm() { return co2ParKm; }
-    public void setCo2ParKm(Double co2ParKm) { this.co2ParKm = co2ParKm; }
+    public Integer getCo2ParKm() { return co2ParKm; }
+    public void setCo2ParKm(Integer co2ParKm) { this.co2ParKm = co2ParKm; }
 
     public Integer getNombrePlaces() { return nombrePlaces; }
     public void setNombrePlaces(Integer nombrePlaces) { this.nombrePlaces = nombrePlaces; }

@@ -8,6 +8,7 @@ import com.ecosur.entities.VehiculeService;
 import com.ecosur.services.VehiculeServiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class VehiculeServiceController {
     }
 
     // GET /vehicule-service
+
     @GetMapping
     public List<VehiculeServiceResponseDto> getAllVehicules() {
         return vehiculeServiceService.getAllVehicules()
@@ -49,6 +51,7 @@ public class VehiculeServiceController {
     }
 
     // POST /vehicule-service
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<VehiculeServiceResponseDto> createVehicule(
             @RequestBody VehiculeServiceCreateRequestDto request) {
@@ -72,6 +75,7 @@ public class VehiculeServiceController {
     }
 
     // PUT /vehicule-service/{id}
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<VehiculeServiceResponseDto> updateVehicule(
             @PathVariable Long id,
@@ -95,6 +99,7 @@ public class VehiculeServiceController {
     }
 
     // PATCH /vehicule-service/{id}/statut
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/statut")
     public ResponseEntity<VehiculeServiceResponseDto> changeStatut(
             @PathVariable Long id,
@@ -108,6 +113,7 @@ public class VehiculeServiceController {
     }
 
     // DELETE /vehicule-service/{id}
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicule(@PathVariable Long id) {
         vehiculeServiceService.deleteVehicule(id);

@@ -7,6 +7,7 @@ import com.ecosur.exception.ResourceNotFoundException;
 import com.ecosur.repositories.RoleRepository;
 import com.ecosur.repositories.UtilisateurRepository;
 import com.ecosur.services.RoleService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class RoleServiceImpl implements RoleService {
                         "Role non trouvé pour le code : " + code));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void assignRoleToUser(Long userId, RoleName newRole) {
         Utilisateur user = utilisateurRepository.findById(userId)

@@ -7,6 +7,7 @@ import com.ecosur.repositories.ReservationVehiculeServiceRepository;
 import com.ecosur.repositories.VehiculeServiceRepository;
 import com.ecosur.services.AdminVehiculeService;
 import com.ecosur.services.EmailService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,12 +33,14 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
 
     // ---------- CU-14 : visualiser le parc ----------
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     @Transactional(readOnly = true)
     public List<VehiculeService> listVehicules() {
         return (List<VehiculeService>) vehiculeRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     @Transactional(readOnly = true)
     public List<VehiculeService> searchVehicules(String immatriculationOrMarque) {
@@ -60,6 +63,7 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
 
     // ---------- CU-15 : ajouter un véhicule ----------
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public VehiculeService addVehicule(VehiculeService vehicule) {
         // RM-11 : lors de la création, le véhicule doit être en service.
@@ -75,6 +79,7 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
 
     // ---------- CU-16 : modifier un véhicule ----------
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public VehiculeService updateVehicule(Long vehiculeId, VehiculeService updated) {
         VehiculeService existing = getVehiculeOrThrow(vehiculeId);
@@ -98,6 +103,7 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
 
     // ---------- CU-17 : mettre un véhicule hors service ----------
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public VehiculeService updateStatut(Long vehiculeId, StatutVehicule nouveauStatut) {
         VehiculeService vehicule = getVehiculeOrThrow(vehiculeId);
@@ -107,6 +113,7 @@ public class AdminVehiculeServiceImpl implements AdminVehiculeService {
 
     // ---------- CU-18 : supprimer un véhicule ----------
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void deleteVehicule(Long vehiculeId) {
         VehiculeService vehicule = getVehiculeOrThrow(vehiculeId);

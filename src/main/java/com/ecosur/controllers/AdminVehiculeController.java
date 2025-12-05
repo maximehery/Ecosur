@@ -23,6 +23,7 @@ public class AdminVehiculeController {
     }
 
     // CU-14 : Visualiser le parc complet
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<VehiculeServiceResponseDto>> listVehicules() {
         List<VehiculeServiceResponseDto> dtos = adminVehiculeService.listVehicules()
@@ -34,6 +35,7 @@ public class AdminVehiculeController {
     }
 
     // Recherche (optionnel)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<VehiculeServiceResponseDto>> search(
             @RequestParam("q") String keyword) {
@@ -47,6 +49,7 @@ public class AdminVehiculeController {
     }
 
     // CU-15 : Ajouter un véhicule
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<VehiculeServiceResponseDto> addVehicule(
             @RequestBody VehiculeServiceRequestDto request) {
@@ -58,6 +61,7 @@ public class AdminVehiculeController {
     }
 
     // CU-16 : Modifier les infos du véhicule
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<VehiculeServiceResponseDto> updateVehicule(
             @PathVariable Long id,
@@ -68,6 +72,7 @@ public class AdminVehiculeController {
     }
 
     // CU-17 : Modifier le statut du véhicule
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/statut")
     public ResponseEntity<VehiculeServiceResponseDto> updateStatut(
             @PathVariable Long id,
@@ -78,6 +83,7 @@ public class AdminVehiculeController {
     }
 
     // CU-18 : Supprimer un véhicule
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicule(@PathVariable Long id) {
         adminVehiculeService.deleteVehicule(id);
@@ -95,7 +101,7 @@ public class AdminVehiculeController {
         dto.setCategorie(entity.getCategorie());
         dto.setPhotoUrl(entity.getPhotoUrl());
         dto.setMotorisation(entity.getMotorisation());
-        dto.setCo2ParKm(Double.valueOf(entity.getCo2ParKm()));
+        dto.setCo2ParKm(entity.getCo2ParKm());
         dto.setNombrePlaces(entity.getNbPlaces());
         dto.setStatut(entity.getStatut());
         return dto;
