@@ -6,7 +6,6 @@ import com.ecosur.dto.AdminUserUpdateRequestDto;
 import com.ecosur.entities.Utilisateur;
 import com.ecosur.services.UtilisateurService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +20,6 @@ public class AdminUserController {
         this.utilisateurService = utilisateurService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<AdminUserResponseDto>> getAllUsers() {
         List<Utilisateur> users = utilisateurService.getAllUsers();
@@ -31,14 +29,12 @@ public class AdminUserController {
         return ResponseEntity.ok(dtos);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<AdminUserResponseDto> getUserById(@PathVariable("id") Long id) {
         Utilisateur user = utilisateurService.getById(id);
         return ResponseEntity.ok(toAdminUserResponseDto(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<AdminUserResponseDto> createUser(
             @RequestBody AdminUserCreateRequestDto request) {
@@ -53,7 +49,6 @@ public class AdminUserController {
         return ResponseEntity.ok(toAdminUserResponseDto(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AdminUserResponseDto> updateUser(
             @PathVariable("id") Long id,
@@ -70,14 +65,12 @@ public class AdminUserController {
         return ResponseEntity.ok(toAdminUserResponseDto(updated));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/ban")
     public ResponseEntity<AdminUserResponseDto> banUser(@PathVariable("id") Long id) {
         Utilisateur user = utilisateurService.banUser(id);
         return ResponseEntity.ok(toAdminUserResponseDto(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/activate")
     public ResponseEntity<AdminUserResponseDto> activateUser(@PathVariable("id") Long id) {
         Utilisateur user = utilisateurService.activateUser(id);
