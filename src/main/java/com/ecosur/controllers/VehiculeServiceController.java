@@ -8,6 +8,7 @@ import com.ecosur.entities.VehiculeService;
 import com.ecosur.services.VehiculeServiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/vehicule-service")
+@PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')") // 🔐 tout le module réservé à ADMIN + AFFAIRE
 public class VehiculeServiceController {
 
     private final VehiculeServiceService vehiculeServiceService;
@@ -48,12 +50,12 @@ public class VehiculeServiceController {
         return new VehiculeServiceResponseDto(vehicule);
     }
 
-    // POST /vehicule-service
+    // POST /vehicule-service  (ADMIN only)
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<VehiculeServiceResponseDto> createVehicule(
             @RequestBody VehiculeServiceCreateRequestDto request) {
 
-        // Map DTO -> entity
         VehiculeService vehicule = new VehiculeService();
         vehicule.setImmatriculation(request.getImmatriculation());
         vehicule.setMarque(request.getMarque());
@@ -63,7 +65,6 @@ public class VehiculeServiceController {
         vehicule.setMotorisation(request.getMotorisation());
         vehicule.setCo2ParKm(request.getCo2ParKm());
         vehicule.setNbPlaces(request.getNbPlaces());
-        // le statut EN_SERVICE sera géré dans le service selon les règles métier
 
         VehiculeService saved = vehiculeServiceService.createVehicule(vehicule);
         VehiculeServiceResponseDto response = new VehiculeServiceResponseDto(saved);
@@ -71,13 +72,13 @@ public class VehiculeServiceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // PUT /vehicule-service/{id}
+    // PUT /vehicule-service/{id}  (ADMIN only)
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<VehiculeServiceResponseDto> updateVehicule(
             @PathVariable Long id,
             @RequestBody VehiculeServiceUpdateRequestDto request) {
 
-        // Map DTO -> entity “update data”
         VehiculeService vehiculeToUpdate = new VehiculeService();
         vehiculeToUpdate.setImmatriculation(request.getImmatriculation());
         vehiculeToUpdate.setMarque(request.getMarque());
@@ -94,7 +95,8 @@ public class VehiculeServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // PATCH /vehicule-service/{id}/statut
+    // PATCH /vehicule-service/{id}/statut  (ADMIN only)
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/statut")
     public ResponseEntity<VehiculeServiceResponseDto> changeStatut(
             @PathVariable Long id,
@@ -107,7 +109,8 @@ public class VehiculeServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // DELETE /vehicule-service/{id}
+    // DELETE /vehicule-service/{id}  (ADMIN only)
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicule(@PathVariable Long id) {
         vehiculeServiceService.deleteVehicule(id);

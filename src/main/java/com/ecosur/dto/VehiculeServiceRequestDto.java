@@ -1,11 +1,9 @@
 package com.ecosur.dto;
 
 import com.ecosur.entities.StatutVehicule;
-import com.ecosur.entities.VehiculeService;
 
-public class VehiculeServiceResponseDto {
+public class VehiculeServiceRequestDto {
 
-    private Long id;
     private String immatriculation;
     private String marque;
     private String modele;
@@ -14,26 +12,9 @@ public class VehiculeServiceResponseDto {
     private String motorisation;
     private Integer co2ParKm;
     private Integer nombrePlaces;
-    private StatutVehicule statut;
+    private StatutVehicule statut; // optionnel pour l'update uniquement
 
-    public VehiculeServiceResponseDto() {}
-
-    public VehiculeServiceResponseDto(VehiculeService entity) {
-        this.id = entity.getId();
-        this.immatriculation = entity.getImmatriculation();
-        this.marque = entity.getMarque();
-        this.modele = entity.getModele();
-        this.categorie = entity.getCategorie();
-        this.photoUrl = entity.getPhotoUrl();
-        this.motorisation = entity.getMotorisation();
-        this.co2ParKm = entity.getCo2ParKm();
-        this.nombrePlaces = entity.getNbPlaces();
-        this.statut = entity.getStatut();
-    }
-
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public VehiculeServiceRequestDto() {}
 
     public String getImmatriculation() { return immatriculation; }
     public void setImmatriculation(String immatriculation) { this.immatriculation = immatriculation; }

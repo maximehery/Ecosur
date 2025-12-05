@@ -4,6 +4,7 @@ import com.ecosur.entities.Site;
 import com.ecosur.exception.ResourceNotFoundException;
 import com.ecosur.repositories.SiteRepository;
 import com.ecosur.services.SiteService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +20,19 @@ public class SiteServiceImpl implements SiteService {
         this.siteRepository = siteRepository;
     }
 
+    // -----------------------------------------------------
+    // Consultation : réservé à tout utilisateur authentifié
+    // -----------------------------------------------------
+
     @Override
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public List<Site> getAllSites() {
         return siteRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public Site getSiteById(Long id) {
         return siteRepository.findById(id)
@@ -33,13 +40,18 @@ public class SiteServiceImpl implements SiteService {
                         "Site non trouvé pour l'id : " + id));
     }
 
+    // -----------------------------------------------------
+    // Administration du module (CRUD)
+    // -----------------------------------------------------
+
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Site createSite(Site site) {
-        // Si tu veux faire des contrôles métier, tu pourras les ajouter ici.
         return siteRepository.save(site);
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Site updateSite(Long id, Site site) {
         Site existing = getSiteById(id);
         existing.setNom(site.getNom());
@@ -48,6 +60,7 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteSite(Long id) {
         Site site = getSiteById(id);
         siteRepository.delete(site);

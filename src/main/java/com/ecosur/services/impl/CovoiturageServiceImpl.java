@@ -6,13 +6,16 @@ import com.ecosur.exception.ResourceNotFoundException;
 import com.ecosur.repositories.*;
 import com.ecosur.services.CovoiturageService;
 import com.ecosur.services.EmailService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class CovoiturageServiceImpl implements CovoiturageService {
+
     private final CovoiturageRepository covoiturageRepository;
     private final ReservationCovoiturageRepository reservationCovoiturageRepository;
     private final UtilisateurRepository utilisateurRepository;
@@ -33,21 +36,28 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         this.vehiculePersoRepository = vehiculePersoRepository;
         this.emailService = emailService;
     }
-  
+
+    // -------------------- Consultation (VISITEUR OK) --------------------
+
     @Override
+    @PreAuthorize("permitAll()")
     @Transactional(readOnly = true)
     public List<Covoiturage> listCovoiturages() {
         return covoiturageRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("permitAll()")
     @Transactional(readOnly = true)
     public Covoiturage getCovoiturageDetail(Long id) {
         return covoiturageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Covoiturage non trouvé"));
     }
 
+    // -------------------- Réservation passager --------------------
+
     @Override
+    @PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')")
     @Transactional
     public void reserverPlace(Long covoiturageId, Long userId) {
         Covoiturage covoiturage = covoiturageRepository.findById(covoiturageId)
@@ -56,7 +66,6 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
 
-        // Vérifier si l'utilisateur a déjà réservé ce covoiturage
         boolean alreadyReserved = reservationCovoiturageRepository
                 .existsByCovoiturageAndPassager(covoiturage, utilisateur);
 
@@ -64,40 +73,36 @@ public class CovoiturageServiceImpl implements CovoiturageService {
             throw new RuntimeException("Vous avez déjà réservé ce covoiturage");
         }
 
-        // Vérifier s'il reste des places disponibles
         long nombreReservations = reservationCovoiturageRepository.countByCovoiturage(covoiturage);
         if (nombreReservations >= covoiturage.getNbPlacesRestantes()) {
             throw new RuntimeException("Ce covoiturage est complet");
         }
 
-        // Créer la réservation
         ReservationCovoiturage reservation = new ReservationCovoiturage();
         reservation.setCovoiturage(covoiturage);
         reservation.setPassager(utilisateur);
         reservationCovoiturageRepository.save(reservation);
 
-        // ✅ Email de confirmation pour le passager
         emailService.sendReservationCovoiturageConfirmation(reservation);
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')")
     @Transactional
     public void cancelReservation(Long reservationId, Long userId) {
         ReservationCovoiturage reservation = reservationCovoiturageRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Réservation non trouvée"));
 
-        // Vérifier que l'utilisateur est bien celui qui a fait la réservation
         if (!reservation.getPassager().getId().equals(userId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à annuler cette réservation");
         }
 
-        // ✅ Email d'annulation pour le passager
         emailService.sendReservationCovoiturageCancelled(reservation);
-
         reservationCovoiturageRepository.delete(reservation);
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public List<ReservationCovoiturage> listReservationByUser(Long userId) {
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
@@ -106,7 +111,10 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         return reservationCovoiturageRepository.findByPassager(utilisateur);
     }
 
+    // -------------------- Gestion des annonces (organisateur) --------------------
+
     @Override
+    @PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')")
     @Transactional
     public void createAnnonce(CovoiturageDto dto, Long userId) {
         Utilisateur organisateur = utilisateurRepository.findById(userId)
@@ -147,6 +155,7 @@ public class CovoiturageServiceImpl implements CovoiturageService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')")
     @Transactional
     public void updateAnnonce(Long id, CovoiturageDto dto, Long userId) {
         Covoiturage covoiturage = covoiturageRepository.findById(id)
@@ -188,6 +197,7 @@ public class CovoiturageServiceImpl implements CovoiturageService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')")
     @Transactional
     public void deleteAnnonce(Long id, Long userId) {
         Covoiturage covoiturage = covoiturageRepository.findById(id)
@@ -197,10 +207,8 @@ public class CovoiturageServiceImpl implements CovoiturageService {
             throw new RuntimeException("Vous n'êtes pas autorisé à supprimer ce covoiturage");
         }
 
-        // ✅ Prévenir tous les passagers que le covoiturage est annulé
         emailService.sendCovoiturageCancelledNotification(covoiturage);
 
-        // Supprimer les réservations, puis l'annonce (si pas de cascade)
         List<ReservationCovoiturage> reservations =
                 reservationCovoiturageRepository.findByCovoiturage(covoiturage);
         reservationCovoiturageRepository.deleteAll(reservations);
@@ -208,9 +216,9 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         covoiturageRepository.delete(covoiturage);
     }
 
+    // ---------- Variante d'update (exemple) ----------
 
-    // ---------- Exemple : mise à jour d'une annonce (CU-08) ----------
-
+    @PreAuthorize("hasAnyRole('REGULIER','AFFAIRE','ADMIN')")
     @Transactional
     public Covoiturage updateAnnonce(Long covoiturageId,
                                      Long userId,
@@ -219,12 +227,10 @@ public class CovoiturageServiceImpl implements CovoiturageService {
         Covoiturage covoiturage = covoiturageRepository.findById(covoiturageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Covoiturage non trouvé"));
 
-        // Vérifier que l'utilisateur est bien l'organisateur
         if (!covoiturage.getOrganisateur().getId().equals(userId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à modifier ce covoiturage");
         }
 
-        // Exemple : on met à jour seulement certains champs (à adapter à ton entité)
         covoiturage.setDateHeureDepart(updatedData.getDateHeureDepart());
         covoiturage.setAdresseDepart(updatedData.getAdresseDepart());
         covoiturage.setAdresseArrivee(updatedData.getAdresseArrivee());
@@ -232,7 +238,6 @@ public class CovoiturageServiceImpl implements CovoiturageService {
 
         Covoiturage saved = covoiturageRepository.save(covoiturage);
 
-        // ✅ Notifier tous les passagers que le covoiturage est mis à jour
         emailService.sendCovoiturageUpdatedNotification(saved);
 
         return saved;
