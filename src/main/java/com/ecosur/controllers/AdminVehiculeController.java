@@ -95,7 +95,7 @@ public class AdminVehiculeController {
         dto.setCategorie(entity.getCategorie());
         dto.setPhotoUrl(entity.getPhotoUrl());
         dto.setMotorisation(entity.getMotorisation());
-        dto.setCo2ParKm(entity.getCo2ParKm());
+        dto.setCo2ParKm(Double.valueOf(entity.getCo2ParKm()));
         dto.setNombrePlaces(entity.getNbPlaces());
         dto.setStatut(entity.getStatut());
         return dto;

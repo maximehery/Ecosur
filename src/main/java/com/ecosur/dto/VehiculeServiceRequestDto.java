@@ -35,7 +35,7 @@ public class VehiculeServiceRequestDto {
     public void setMotorisation(String motorisation) { this.motorisation = motorisation; }
 
     public Integer getCo2ParKm() { return co2ParKm; }
-    public void setCo2ParKm(Double co2ParKm) { this.co2ParKm = co2ParKm; }
+    public void setCo2ParKm(Integer co2ParKm) { this.co2ParKm = co2ParKm; }
 
     public Integer getNombrePlaces() { return nombrePlaces; }
     public void setNombrePlaces(Integer nombrePlaces) { this.nombrePlaces = nombrePlaces; }
