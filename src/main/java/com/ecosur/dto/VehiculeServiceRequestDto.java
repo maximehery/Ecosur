@@ -10,7 +10,7 @@ public class VehiculeServiceRequestDto {
     private String categorie;
     private String photoUrl;
     private String motorisation;
-    private Double co2ParKm;
+    private Integer co2ParKm;
     private Integer nombrePlaces;
     private StatutVehicule statut; // optionnel pour l'update uniquement
 
