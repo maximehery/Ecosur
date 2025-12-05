@@ -8,9 +8,10 @@ import com.ecosur.repositories.RoleRepository;
 import com.ecosur.repositories.SiteRepository;
 import com.ecosur.repositories.UtilisateurRepository;
 import com.ecosur.services.UtilisateurService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +58,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         user.setNom(nom);
         user.setPrenom(prenom);
         user.setEmail(email);
-        // ✅ mot de passe hashé
+        // mot de passe hashé
         user.setMotDePasse(passwordEncoder.encode(motDePasse));
         user.setRole(role);
         user.setActif(true);
@@ -114,7 +115,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.save(user);
     }
 
+    // ----------------- Méthodes d’admin -----------------
+
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Utilisateur banUser(Long userId) {
         Utilisateur user = getById(userId);
         if (!user.isActif()) {
@@ -125,6 +129,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Utilisateur activateUser(Long userId) {
         Utilisateur user = getById(userId);
         if (user.isActif()) {
@@ -135,6 +140,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Utilisateur changeRole(Long userId, RoleName newRole) {
         Utilisateur user = getById(userId);
 
@@ -147,20 +153,21 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public List<Utilisateur> getAllActiveUsers() {
         return utilisateurRepository.findByActifTrue();
     }
 
-    // ----------------- Méthodes ajoutées pour CU-19 (Admin) -----------------
-
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public List<Utilisateur> getAllUsers() {
         return utilisateurRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public List<Utilisateur> getUsersByRole(RoleName roleName) {
         Role role = roleRepository.findByCode(roleName)
@@ -170,6 +177,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Utilisateur updateUserAdmin(Long userId,
                                        String nom,
                                        String prenom,
@@ -187,7 +195,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         }
 
         if (email != null && !email.isBlank()) {
-            // si changement d'email, vérifier unicité
             if (!email.equals(user.getEmail())
                     && utilisateurRepository.findByEmail(email).isPresent()) {
                 throw new BusinessException("Un autre utilisateur utilise déjà cet email : " + email);

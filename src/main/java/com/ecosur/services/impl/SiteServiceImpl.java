@@ -20,13 +20,19 @@ public class SiteServiceImpl implements SiteService {
         this.siteRepository = siteRepository;
     }
 
+    // -----------------------------------------------------
+    // Consultation : réservé à tout utilisateur authentifié
+    // -----------------------------------------------------
+
     @Override
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public List<Site> getAllSites() {
         return siteRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public Site getSiteById(Long id) {
         return siteRepository.findById(id)
@@ -34,15 +40,18 @@ public class SiteServiceImpl implements SiteService {
                         "Site non trouvé pour l'id : " + id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // -----------------------------------------------------
+    // Administration du module (CRUD)
+    // -----------------------------------------------------
+
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Site createSite(Site site) {
-        // Si tu veux faire des contrôles métier, tu pourras les ajouter ici.
         return siteRepository.save(site);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public Site updateSite(Long id, Site site) {
         Site existing = getSiteById(id);
         existing.setNom(site.getNom());
@@ -50,8 +59,8 @@ public class SiteServiceImpl implements SiteService {
         return siteRepository.save(existing);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteSite(Long id) {
         Site site = getSiteById(id);
         siteRepository.delete(site);

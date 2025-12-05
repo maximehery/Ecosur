@@ -28,13 +28,14 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     @Transactional(readOnly = true)
     public List<VehiculeService> getAllVehicules() {
-        // findAll() renvoie déjà List<VehiculeService>
         return vehiculeRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     @Transactional(readOnly = true)
     public List<VehiculeService> getVehiculesDisponibles() {
         // Seuls les véhicules EN_SERVICE sont considérés disponibles
@@ -42,6 +43,7 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     @Transactional(readOnly = true)
     public VehiculeService getVehiculeById(Long id) {
         return vehiculeRepository.findById(id)
@@ -49,21 +51,19 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
                         "Véhicule de service non trouvé pour l'id : " + id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public VehiculeService createVehicule(VehiculeService vehicule) {
         // RM-11 : création obligatoire avec statut EN_SERVICE
         vehicule.setStatut(StatutVehicule.EN_SERVICE);
         return vehiculeRepository.save(vehicule);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public VehiculeService updateVehicule(Long id, VehiculeService vehicule) {
-        // On récupère d'abord l'entité existante
         VehiculeService existing = getVehiculeById(id);
 
-        // On met à jour les champs modifiables
         existing.setImmatriculation(vehicule.getImmatriculation());
         existing.setMarque(vehicule.getMarque());
         existing.setModele(vehicule.getModele());
@@ -73,7 +73,6 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         existing.setCo2ParKm(vehicule.getCo2ParKm());
         existing.setNbPlaces(vehicule.getNbPlaces());
 
-        // Si tu veux autoriser le changement de statut depuis ce method:
         if (vehicule.getStatut() != null &&
                 vehicule.getStatut() != existing.getStatut()) {
             changeStatutInternal(existing, vehicule.getStatut());
@@ -82,16 +81,16 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         return vehiculeRepository.save(existing);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public VehiculeService changeStatut(Long id, StatutVehicule nouveauStatut) {
         VehiculeService vehicule = getVehiculeById(id);
         changeStatutInternal(vehicule, nouveauStatut);
         return vehiculeRepository.save(vehicule);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteVehicule(Long id) {
         VehiculeService vehicule = getVehiculeById(id);
 
@@ -103,17 +102,12 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
 
     // --------- Méthodes privées ---------
 
-    /**
-     * Applique les règles métier liées au changement de statut.
-     * Si on passe à HORS_SERVICE ou EN_REPARATION, les réservations futures EN_COURS sont annulées.
-     */
     private void changeStatutInternal(VehiculeService vehicule,
                                       StatutVehicule nouveauStatut) {
 
         StatutVehicule ancienStatut = vehicule.getStatut();
         vehicule.setStatut(nouveauStatut);
 
-        // Si on passe à HORS_SERVICE ou EN_REPARATION => annuler les réservations futures
         if (EnumSet.of(StatutVehicule.HORS_SERVICE, StatutVehicule.EN_REPARATION)
                 .contains(nouveauStatut)
                 && ancienStatut != nouveauStatut) {
@@ -122,9 +116,6 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
         }
     }
 
-    /**
-     * Annule toutes les réservations futures EN_COURS de ce véhicule.
-     */
     private void annulerReservationsFutures(VehiculeService vehicule) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -138,7 +129,6 @@ public class VehiculeServiceServiceImpl implements VehiculeServiceService {
                 reservationRepository.save(r);
             }
         }
-
-        // L'envoi des emails (RM-12) sera géré plus tard dans EmailService.
+        // Les emails (RM-12) sont gérés dans EmailService / AdminVehiculeService.
     }
 }

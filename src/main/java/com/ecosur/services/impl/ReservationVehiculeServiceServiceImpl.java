@@ -9,6 +9,7 @@ import com.ecosur.repositories.UtilisateurRepository;
 import com.ecosur.repositories.VehiculeServiceRepository;
 import com.ecosur.services.EmailService;
 import com.ecosur.services.ReservationVehiculeServiceService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,14 +25,13 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     private final VehiculeServiceRepository vehiculeRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final AdresseRepository adresseRepository;
-
     private final EmailService emailService;
 
     public ReservationVehiculeServiceServiceImpl(
             ReservationVehiculeServiceRepository reservationRepository,
             VehiculeServiceRepository vehiculeRepository,
             UtilisateurRepository utilisateurRepository,
-                AdresseRepository adresseRepository,
+            AdresseRepository adresseRepository,
             EmailService emailService) {
         this.reservationRepository = reservationRepository;
         this.vehiculeRepository = vehiculeRepository;
@@ -40,12 +40,10 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
         this.emailService = emailService;
     }
 
-
-
-
     // ---------- CU-10 : listes en cours / historique ----------
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     @Transactional(readOnly = true)
     public List<ReservationVehiculeService> getReservationsEnCoursByUser(Long userId) {
         Utilisateur user = getUserOrThrow(userId);
@@ -58,6 +56,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     @Transactional(readOnly = true)
     public List<ReservationVehiculeService> getReservationsHistoriqueByUser(Long userId) {
         Utilisateur user = getUserOrThrow(userId);
@@ -72,6 +71,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     // ---------- CU-11 : création ----------
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     public ReservationVehiculeService createReservation(Long userId,
                                                         Long vehiculeId,
                                                         Long adresseDepartId,
@@ -95,6 +95,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
         reservation.setDateHeureDebut(dateHeureDebut);
         reservation.setDateHeureFinPrevue(dateHeureFinPrevue);
         reservation.setStatut(StatutReservation.EN_COURS);
+
         emailService.sendReservationVehiculeConfirmation(reservation);
 
         return reservationRepository.save(reservation);
@@ -103,6 +104,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     // ---------- CU-12 : modification ----------
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     public ReservationVehiculeService updateReservation(Long reservationId,
                                                         Long newVehiculeId,
                                                         Long newAdresseDepartId,
@@ -153,6 +155,7 @@ public class ReservationVehiculeServiceServiceImpl implements ReservationVehicul
     // ---------- CU-13 : annulation ----------
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','AFFAIRE')")
     public void cancelReservation(Long reservationId, Long userId) {
         ReservationVehiculeService reservation = getReservationOrThrow(reservationId);
         Utilisateur user = getUserOrThrow(userId);
