@@ -71,4 +71,7 @@ public class Utilisateur {
 
     public Site getSite() { return site; }
     public void setSite(Site site) { this.site = site; }
+
+    public void setId(long l) {
+    }
 }
